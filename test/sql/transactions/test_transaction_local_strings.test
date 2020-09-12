@@ -27,6 +27,17 @@ SELECT * FROM strings WHERE i=2 ORDER BY 1
 ----
 2	world
 
+query I
+SELECT s FROM strings ORDER BY 1
+----
+hello
+world
+
+query I
+SELECT s FROM strings WHERE s='hello' ORDER BY 1
+----
+hello
+
 # update
 statement ok
 UPDATE strings SET s='test' WHERE i=2

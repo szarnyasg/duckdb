@@ -121,7 +121,7 @@ void LocalStorage::Scan(LocalScanState &state, const vector<column_t> &column_id
 			// row identifier: return a sequence of rowids starting from MAX_ROW_ID plus the row offset in the chunk
 			result.data[i].Sequence(MAX_ROW_ID + state.current_row, 1);
 		} else {
-			state.storage->columns[i]->Scan(transaction, state.column_scans[i], result.data[i]);
+			state.storage->columns[id]->Scan(transaction, state.column_scans[id], result.data[i]);
 		}
 		idx_t approved_tuple_count = count;
 		if (table_filters) {
