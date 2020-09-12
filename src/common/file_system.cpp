@@ -588,7 +588,7 @@ void FileSystem::SetWorkingDirectory(string path) {
 }
 
 idx_t FileSystem::GetAvailableMemory() {
-	long long available_memory_kb;
+	ULONGLONG available_memory_kb;
 	if (!GetPhysicallyInstalledSystemMemory(&available_memory_kb)) {
 		throw IOException("Could not fetch available system memory!");
 	}
