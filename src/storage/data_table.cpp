@@ -43,23 +43,11 @@ DataTable::DataTable(StorageManager &storage, string schema, string table, vecto
 	}
 }
 
-DataTable::DataTable(ClientContext &context, DataTable &parent, ColumnDefinition &new_column, Expression *default_value)
-    : info(parent.info), types(parent.types), storage(parent.storage), persistent_manager(parent.persistent_manager),
-      transient_manager(parent.transient_manager), columns(parent.columns), is_root(true) {
-	// prevent any new tuples from being added to the parent
-	lock_guard<mutex> parent_lock(parent.append_lock);
-	// add the new column to this DataTable
-	auto new_column_type = new_column.type;
-	idx_t new_column_idx = columns.size();
-
-	types.push_back(new_column_type);
-	auto column_data = make_shared<ColumnData>(*storage.buffer_manager, *info);
-	column_data->type = new_column_type;
-	column_data->column_idx = new_column_idx;
-	columns.push_back(move(column_data));
+void DataTable::AddColumn(ColumnData &column_data, idx_t new_column_idx, LogicalType new_column_type, Expression *default_value, idx_t rows_to_write) {
+	column_data.type = new_column_type;
+	column_data.column_idx = new_column_idx;
 
 	// fill the column with its DEFAULT value, or NULL if none is specified
-	idx_t rows_to_write = persistent_manager->max_row + transient_manager->max_row;
 	if (rows_to_write > 0) {
 		ExpressionExecutor executor;
 		DataChunk dummy_chunk;
@@ -71,16 +59,34 @@ DataTable::DataTable(ClientContext &context, DataTable &parent, ColumnDefinition
 		}
 
 		ColumnAppendState state;
-		columns[new_column_idx]->InitializeAppend(state);
+		column_data.InitializeAppend(state);
 		for (idx_t i = 0; i < rows_to_write; i += STANDARD_VECTOR_SIZE) {
 			idx_t rows_in_this_vector = MinValue<idx_t>(rows_to_write - i, STANDARD_VECTOR_SIZE);
 			if (default_value) {
 				dummy_chunk.SetCardinality(rows_in_this_vector);
 				executor.ExecuteExpression(dummy_chunk, result);
 			}
-			columns[new_column_idx]->Append(state, result, rows_in_this_vector);
+			column_data.Append(state, result, rows_in_this_vector);
 		}
 	}
+}
+
+DataTable::DataTable(ClientContext &context, DataTable &parent, ColumnDefinition &new_column, Expression *default_value)
+    : info(parent.info), types(parent.types), storage(parent.storage), persistent_manager(parent.persistent_manager),
+      transient_manager(parent.transient_manager), columns(parent.columns), is_root(true) {
+	// prevent any new tuples from being added to the parent
+	lock_guard<mutex> parent_lock(parent.append_lock);
+	// add the new column to this DataTable
+	auto new_column_type = new_column.type;
+	idx_t new_column_idx = columns.size();
+
+	types.push_back(new_column_type);
+	idx_t rows_to_write = persistent_manager->max_row + transient_manager->max_row;
+
+	auto column_data = make_shared<ColumnData>(*storage.buffer_manager, *info);
+	AddColumn(*column_data, new_column_idx, new_column_type, default_value, rows_to_write);
+	columns.push_back(move(column_data));
+
 	// also add this column to client local storage
 	Transaction::GetTransaction(context).storage.AddColumn(&parent, this, new_column, default_value);
 

@@ -333,28 +333,14 @@ void LocalStorage::AddColumn(DataTable *old_dt, DataTable *new_dt, ColumnDefinit
 
 	// now add the new column filled with the default value to all chunks
 	auto new_column_type = new_column.type;
-	ExpressionExecutor executor;
-	DataChunk dummy_chunk;
-	if (default_value) {
-		executor.AddExpression(*default_value);
-	}
 
-	throw NotImplementedException("FIXME: add column");
-	// new_storage->columns.push_back()
-	// for (idx_t chunk_idx = 0; chunk_idx < new_storage->collection.chunks.size(); chunk_idx++) {
-	// 	auto &chunk = new_storage->collection.chunks[chunk_idx];
-	// 	Vector result(new_column_type);
-	// 	if (default_value) {
-	// 		dummy_chunk.SetCardinality(chunk->size());
-	// 		executor.ExecuteExpression(dummy_chunk, result);
-	// 	} else {
-	// 		FlatVector::Nullmask(result).set();
-	// 	}
-	// 	chunk->data.push_back(move(result));
-	// }
+	auto new_column_data = make_unique<ColumnData>(*storage.buffer_manager, *new_dt->info);
+	new_column_data->persistent_rows = MAX_ROW_ID;
+	new_dt->AddColumn(*new_column_data, new_storage->columns.size(), new_column_type, default_value, new_storage->max_row);
+	new_storage->columns.push_back(move(new_column_data));
 
-	// table_storage.erase(entry);
-	// table_storage[new_dt] = move(new_storage);
+	table_storage.erase(entry);
+	table_storage[new_dt] = move(new_storage);
 }
 
 void LocalStorage::ChangeType(DataTable *old_dt, DataTable *new_dt, idx_t changed_idx, LogicalType target_type,

@@ -133,6 +133,8 @@ public:
 		this->is_root = true;
 	}
 
+
+	void AddColumn(ColumnData &column_data, idx_t new_column_idx, LogicalType new_column_type, Expression *default_value, idx_t rows_to_write);
 private:
 	//! Verify constraints with a chunk from the Append containing all columns of the table
 	void VerifyAppendConstraints(TableCatalogEntry &table, DataChunk &chunk);
