@@ -57,9 +57,9 @@ struct ColumnFetchState {
 struct LocalScanState {
 	LocalTableStorage *storage = nullptr;
 
-	idx_t chunk_index;
-	idx_t max_index;
-	idx_t last_chunk_count;
+	unique_ptr<ColumnScanState[]> column_scans;
+	idx_t current_row;
+	idx_t max_row;
 };
 
 class TableScanState {

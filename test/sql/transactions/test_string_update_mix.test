@@ -1,0 +1,42 @@
+# name: test/sql/transactions/test_string_update_mix.test
+# description: Test mix of string appends and string updates
+# group: [transactions]
+
+statement ok
+PRAGMA enable_verification
+
+# create a table and insert some values
+statement ok
+CREATE TABLE strings(s VARCHAR)
+
+statement ok
+INSERT INTO strings VALUES ('a'), ('b'), ('c');
+
+# update it
+statement ok
+UPDATE strings SET s=repeat(s, 2);
+
+query T
+SELECT * FROM strings ORDER BY s
+----
+aa
+bb
+cc
+
+# now insert a bunch more values
+statement ok
+INSERT INTO strings SELECT i::VARCHAR FROM range(0, 10000) tbl(i)
+
+query TT
+SELECT MIN(s), MAX(s) FROM strings
+----
+0	cc
+
+# update them again
+statement ok
+UPDATE strings SET s='hello' WHERE s >= '0' AND s <= '9999999';
+
+query TT
+SELECT MIN(s), MAX(s) FROM strings
+----
+aa	hello

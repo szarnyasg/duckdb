@@ -1,0 +1,48 @@
+# name: test/sql/transactions/transaction_local_data_large.test_slow
+# description: Test operations on large transaction local data
+# group: [transactions]
+
+statement ok
+PRAGMA enable_verification
+
+statement ok
+CREATE TABLE vals(i INTEGER, s VARCHAR)
+
+statement ok
+BEGIN TRANSACTION
+
+statement ok
+INSERT INTO vals SELECT i, i::VARCHAR FROM range(0, 100000) t1(i)
+
+query IIIIIII
+SELECT COUNT(i), COUNT(s), MIN(i), MIN(s), MAX(i), MAX(s), SUM(i) FROM vals
+----
+100000	100000	0	0	99999	99999	4999950000
+
+query IIIIIII
+SELECT COUNT(i), COUNT(s), MIN(i), MIN(s), MAX(i), MAX(s), SUM(i) FROM vals WHERE i>=50000
+----
+50000	50000	50000	50000	99999	99999	3749975000
+
+# update
+statement ok
+UPDATE vals SET i=i+1, s=repeat(s, 2)
+
+query IIIIIII
+SELECT COUNT(i), COUNT(s), MIN(i), MIN(s), MAX(i), MAX(s), SUM(i) FROM vals
+----
+100000	100000	1	00	100000	9999999999	5000050000
+
+query IIIIIII
+SELECT COUNT(i), COUNT(s), MIN(i), MIN(s), MAX(i), MAX(s), SUM(i) FROM vals WHERE i>=50000
+----
+50001	50001	50000	4999949999	100000	9999999999	3750075000
+
+# delete
+statement ok
+DELETE FROM vals WHERE i%2=0
+
+query IIIIIII
+SELECT COUNT(i), COUNT(s), MIN(i), MIN(s), MAX(i), MAX(s), SUM(i) FROM vals
+----
+50000	50000	1	00	99999	9999899998	2500000000

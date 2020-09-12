@@ -78,6 +78,9 @@ public:
 	void Update(ColumnData &data, SegmentStatistics &stats, Transaction &transaction, Vector &update, row_t *ids,
 	            idx_t count, row_t offset);
 
+	//! Perform an in-place update that cannot be rolled back
+	virtual void UpdateInPlace(SegmentStatistics &stats, Vector &update, row_t *ids, idx_t count, row_t offset) = 0;
+
 	//! Rollback a previous update
 	virtual void RollbackUpdate(UpdateInfo *info) = 0;
 	//! Cleanup an update, removing it from the version chain. This should only be called if an exclusive lock is held

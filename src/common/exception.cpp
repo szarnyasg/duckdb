@@ -20,10 +20,18 @@ const char *Exception::what() const noexcept {
 }
 
 template <> ExceptionFormatValue ExceptionFormatValue::CreateFormatValue(PhysicalType value) {
-	return ExceptionFormatValue(TypeIdToString(value));
+	try {
+		return ExceptionFormatValue(TypeIdToString(value));
+	} catch(...) {
+		return ExceptionFormatValue("INVALID PHYSICAL TYPE");
+	}
 }
 template <> ExceptionFormatValue ExceptionFormatValue::CreateFormatValue(LogicalType value) {
-	return ExceptionFormatValue(value.ToString());
+	try {
+		return ExceptionFormatValue(value.ToString());
+	} catch(...) {
+		return ExceptionFormatValue("INVALID LOGICAL TYPE");
+	}
 }
 template <> ExceptionFormatValue ExceptionFormatValue::CreateFormatValue(float value) {
 	return ExceptionFormatValue(double(value));

@@ -42,7 +42,7 @@ Transaction *TransactionManager::StartTransaction() {
 	timestamp_t start_timestamp = Timestamp::GetCurrentTimestamp();
 
 	// create the actual transaction
-	auto transaction = make_unique<Transaction>(start_time, transaction_id, start_timestamp);
+	auto transaction = make_unique<Transaction>(storage, start_time, transaction_id, start_timestamp);
 	auto transaction_ptr = transaction.get();
 
 	// store it in the set of active transactions

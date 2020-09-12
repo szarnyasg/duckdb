@@ -26,6 +26,9 @@ static NumericSegment::merge_update_function_t GetMergeUpdateFunction(PhysicalTy
 
 static NumericSegment::update_info_append_function_t GetUpdateInfoAppendFunction(PhysicalType type);
 
+static NumericSegment::update_in_place_function_t GetUpdateInPlaceFunction(PhysicalType type);
+
+
 NumericSegment::NumericSegment(BufferManager &manager, PhysicalType type, idx_t row_start, block_id_t block)
     : UncompressedSegment(manager, type, row_start) {
 	// set up the different functions for this type of segment
@@ -35,6 +38,7 @@ NumericSegment::NumericSegment(BufferManager &manager, PhysicalType type, idx_t 
 	this->append_from_update_info = GetUpdateInfoAppendFunction(type);
 	this->rollback_update = GetRollbackUpdateFunction(type);
 	this->merge_update_function = GetMergeUpdateFunction(type);
+	this->update_in_place_function = GetUpdateInPlaceFunction(type);
 
 	// figure out how many vectors we want to store in this block
 	this->type_size = GetTypeIdSize(type);
@@ -439,8 +443,8 @@ idx_t NumericSegment::Append(SegmentStatistics &stats, Vector &data, idx_t offse
 //===--------------------------------------------------------------------===//
 void NumericSegment::Update(ColumnData &column_data, SegmentStatistics &stats, Transaction &transaction, Vector &update,
                             row_t *ids, idx_t count, idx_t vector_index, idx_t vector_offset, UpdateInfo *node) {
+	auto handle = manager.Pin(block_id);
 	if (!node) {
-		auto handle = manager.Pin(block_id);
 
 		// create a new node in the undo buffer for this update
 		node = CreateUpdateInfo(column_data, transaction, ids, count, vector_index, vector_offset, type_size);
@@ -448,8 +452,6 @@ void NumericSegment::Update(ColumnData &column_data, SegmentStatistics &stats, T
 		update_function(stats, node, handle->node->buffer + vector_index * vector_size, update);
 	} else {
 		// node already exists for this transaction, we need to merge the new updates with the existing updates
-		auto handle = manager.Pin(block_id);
-
 		merge_update_function(stats, node, handle->node->buffer + vector_index * vector_size, update, ids, count,
 		                      vector_offset);
 	}
@@ -464,6 +466,24 @@ void NumericSegment::RollbackUpdate(UpdateInfo *info) {
 	rollback_update(info, handle->node->buffer + info->vector_index * vector_size);
 
 	CleanupUpdate(info);
+}
+
+//===--------------------------------------------------------------------===//
+// Update In-Place
+//===--------------------------------------------------------------------===//
+void NumericSegment::UpdateInPlace(SegmentStatistics &stats, Vector &update, row_t *ids, idx_t count, row_t offset) {
+	auto write_lock = lock.GetExclusiveLock();
+	auto handle = manager.Pin(block_id);
+
+	idx_t vector_index = (ids[0] - offset) / STANDARD_VECTOR_SIZE;
+	idx_t vector_offset = offset + vector_index * STANDARD_VECTOR_SIZE;
+
+	SelectionVector sel(STANDARD_VECTOR_SIZE);
+	for(idx_t i = 0; i < count; i++) {
+		sel.set_index(i, ids[i] - vector_offset);
+	}
+
+	update_in_place_function(stats, handle->node->buffer + vector_index * vector_size, update, sel, count);
 }
 
 //===--------------------------------------------------------------------===//
@@ -606,6 +626,54 @@ static NumericSegment::update_function_t GetUpdateFunction(PhysicalType type) {
 		return update_loop<double>;
 	case PhysicalType::INTERVAL:
 		return update_loop<interval_t>;
+	default:
+		throw NotImplementedException("Unimplemented type for uncompressed segment");
+	}
+}
+
+//===--------------------------------------------------------------------===//
+// Update In-Place
+//===--------------------------------------------------------------------===//
+template <class T>
+static void update_in_place_loop(SegmentStatistics &stats, data_ptr_t base, Vector &update, const SelectionVector &base_sel, idx_t n) {
+	auto update_data = FlatVector::GetData<T>(update);
+	auto &update_nullmask = FlatVector::Nullmask(update);
+	auto nullmask = (nullmask_t *)base;
+	auto base_data = (T *)(base + sizeof(nullmask_t));
+	auto min = (T *)stats.minimum.get();
+	auto max = (T *)stats.maximum.get();
+
+	for (idx_t i = 0; i < n; i++) {
+		auto base_idx = base_sel.get_index(i);
+		bool is_null = update_nullmask[i];
+		(*nullmask)[base_idx] = is_null;
+		if (!is_null) {
+			base_data[base_idx] = update_data[i];
+			// update the min max with the new data
+			update_min_max_numeric_segment<T>(update_data[i], min, max);
+		}
+	}
+}
+
+static NumericSegment::update_in_place_function_t GetUpdateInPlaceFunction(PhysicalType type) {
+	switch (type) {
+	case PhysicalType::BOOL:
+	case PhysicalType::INT8:
+		return update_in_place_loop<int8_t>;
+	case PhysicalType::INT16:
+		return update_in_place_loop<int16_t>;
+	case PhysicalType::INT32:
+		return update_in_place_loop<int32_t>;
+	case PhysicalType::INT64:
+		return update_in_place_loop<int64_t>;
+	case PhysicalType::INT128:
+		return update_in_place_loop<hugeint_t>;
+	case PhysicalType::FLOAT:
+		return update_in_place_loop<float>;
+	case PhysicalType::DOUBLE:
+		return update_in_place_loop<double>;
+	case PhysicalType::INTERVAL:
+		return update_in_place_loop<interval_t>;
 	default:
 		throw NotImplementedException("Unimplemented type for uncompressed segment");
 	}

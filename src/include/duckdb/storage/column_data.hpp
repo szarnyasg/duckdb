@@ -61,6 +61,8 @@ public:
 
 	//! Update the specified row identifiers
 	void Update(Transaction &transaction, Vector &updates, Vector &row_ids, idx_t count);
+	//! Perform a non-transactional in-place update of the set of rows
+	void UpdateInPlace(Vector &updates, Vector &row_ids, idx_t count);
 
 	//! Fetch the vector from the column data that belongs to this specific row
 	void Fetch(ColumnScanState &state, row_t row_id, Vector &result);

@@ -161,6 +161,17 @@ void ColumnData::Update(Transaction &transaction, Vector &updates, Vector &row_i
 	segment->Update(*this, transaction, updates, FlatVector::GetData<row_t>(row_ids), count);
 }
 
+void ColumnData::UpdateInPlace(Vector &updates, Vector &row_ids, idx_t count) {
+	// first find the segment that the update belongs to
+	idx_t first_id = FlatVector::GetValue<row_t>(row_ids, 0);
+	auto segment = (ColumnSegment *)data.GetSegment(first_id);
+	assert(segment->segment_type == ColumnSegmentType::TRANSIENT);
+	auto &transient = (TransientSegment &)*segment;
+
+	// now perform the update within the segment
+	transient.UpdateInPlace(*this, updates, FlatVector::GetData<row_t>(row_ids), count);
+}
+
 void ColumnData::Fetch(ColumnScanState &state, row_t row_id, Vector &result) {
 	// find the segment that the row belongs to
 	auto segment = (ColumnSegment *)data.GetSegment(row_id);

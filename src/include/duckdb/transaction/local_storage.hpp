@@ -11,6 +11,7 @@
 #include "duckdb/common/types/chunk_collection.hpp"
 #include "duckdb/storage/table/scan_state.hpp"
 #include "duckdb/storage/index.hpp"
+#include "duckdb/storage/table/version_manager.hpp"
 
 namespace duckdb {
 class DataTable;
@@ -19,20 +20,25 @@ struct TableAppendState;
 
 class LocalTableStorage {
 public:
-	LocalTableStorage(DataTable &table);
+	LocalTableStorage(Transaction &transaction, StorageManager &storage, DataTable &table);
 	~LocalTableStorage();
 
-	//! The main chunk collection holding the data
-	ChunkCollection collection;
+	Transaction &transaction;
+	StorageManager &storage;
+	DataTable &table;
+	//! The columns collection holding the data
+	vector<unique_ptr<ColumnData>> columns;
 	//! The set of unique indexes
 	vector<unique_ptr<Index>> indexes;
-	//! The set of deleted entries
+	 //! The set of deleted entries
 	unordered_map<idx_t, unique_ptr<bool[]>> deleted_entries;
-	//! The max row
-	row_t max_row;
-
+	//! The amount of rows in the table storage
+	idx_t max_row;
 public:
 	void InitializeScan(LocalScanState &state);
+	void Append(DataChunk &chunk);
+
+	void Delete(Vector &row_ids, idx_t count);
 
 	void Clear();
 };
@@ -45,6 +51,8 @@ public:
 	};
 
 public:
+	LocalStorage(Transaction &transaction, StorageManager &storage) : transaction(transaction), storage(storage) {}
+
 	//! Initialize a scan of the local storage
 	void InitializeScan(DataTable *table, LocalScanState &state);
 	//! Scan
@@ -78,6 +86,8 @@ private:
 	template <class T> bool ScanTableStorage(DataTable *table, LocalTableStorage *storage, T &&fun);
 
 private:
+	Transaction &transaction;
+	StorageManager &storage;
 	unordered_map<DataTable *, unique_ptr<LocalTableStorage>> table_storage;
 };
 

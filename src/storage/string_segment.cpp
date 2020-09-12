@@ -877,4 +877,42 @@ void StringSegment::RollbackUpdate(UpdateInfo *info) {
 	CleanupUpdate(info);
 }
 
+//===--------------------------------------------------------------------===//
+// Update In-Place
+//===--------------------------------------------------------------------===//
+void StringSegment::UpdateInPlace(SegmentStatistics &stats, Vector &update, row_t *ids, idx_t count, row_t offset) {
+	auto write_lock = lock.GetExclusiveLock();
+	if (!string_updates) {
+		string_updates = unique_ptr<string_update_info_t[]>(new string_update_info_t[max_vector_count]);
+	}
+
+	idx_t vector_index = (ids[0] - offset) / STANDARD_VECTOR_SIZE;
+	idx_t vector_offset = offset + vector_index * STANDARD_VECTOR_SIZE;
+
+	// first pin the base block
+	auto handle = manager.Pin(block_id);
+	auto baseptr = handle->node->buffer;
+	auto base = baseptr + vector_index * vector_size;
+	auto &base_nullmask = *((nullmask_t *)base);
+
+	string_update_info_t new_update_info;
+	// next up: create the updates
+	if (!string_updates[vector_index]) {
+		// no string updates yet, allocate a block and place the updates there
+		new_update_info = CreateStringUpdate(stats, update, ids, count, vector_offset);
+	} else {
+		// string updates already exist, merge the string updates together
+		new_update_info = MergeStringUpdate(stats, update, ids, count, vector_offset, *string_updates[vector_index]);
+	}
+
+	// now update the original nullmask
+	auto &update_nullmask = FlatVector::Nullmask(update);
+	for (idx_t i = 0; i < count; i++) {
+		base_nullmask[ids[i] - vector_offset] = update_nullmask[i];
+	}
+	// finally move the string updates in place
+	string_updates[vector_index] = move(new_update_info);
+}
+
+
 } // namespace duckdb

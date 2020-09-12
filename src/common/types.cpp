@@ -179,8 +179,9 @@ string TypeIdToString(PhysicalType type) {
 	case PhysicalType::LIST:
 		return "LIST<?>";
 	default:
-		throw ConversionException("Invalid PhysicalType %d", type);
+		break;
 	}
+	return "INVALID";
 }
 
 idx_t GetTypeIdSize(PhysicalType type) {
@@ -216,7 +217,7 @@ idx_t GetTypeIdSize(PhysicalType type) {
 	case PhysicalType::VARBINARY:
 		return sizeof(blob_t);
 	default:
-		throw ConversionException("Invalid PhysicalType %d", type);
+		throw ConversionException("Invalid PhysicalType %s", type);
 	}
 }
 

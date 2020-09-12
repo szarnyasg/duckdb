@@ -54,6 +54,10 @@ void TransientSegment::Update(ColumnData &column_data, Transaction &transaction,
 	data->Update(column_data, stats, transaction, updates, ids, count, this->start);
 }
 
+void TransientSegment::UpdateInPlace(ColumnData &column_data, Vector &updates, row_t *ids, idx_t count) {
+	data->UpdateInPlace(stats, updates, ids, count, this->start);
+}
+
 void TransientSegment::InitializeAppend(ColumnAppendState &state) {
 	state.lock = data->lock.GetExclusiveLock();
 }

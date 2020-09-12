@@ -32,6 +32,7 @@ public:
 	//! Rollback a previous update
 	void RollbackUpdate(UpdateInfo *info) override;
 
+	void UpdateInPlace(SegmentStatistics &stats, Vector &update, row_t *ids, idx_t count, row_t offset) override;
 protected:
 	void Update(ColumnData &data, SegmentStatistics &stats, Transaction &transaction, Vector &update, row_t *ids,
 	            idx_t count, idx_t vector_index, idx_t vector_offset, UpdateInfo *node) override;
@@ -53,7 +54,7 @@ public:
 	typedef void (*rollback_update_function_t)(UpdateInfo *info, data_ptr_t base_data);
 	typedef void (*merge_update_function_t)(SegmentStatistics &stats, UpdateInfo *node, data_ptr_t target,
 	                                        Vector &update, row_t *ids, idx_t count, idx_t vector_offset);
-
+	typedef void (*update_in_place_function_t)(SegmentStatistics &stats, data_ptr_t base, Vector &update, const SelectionVector &base_sel, idx_t n);
 private:
 	append_function_t append_function;
 	update_function_t update_function;
@@ -61,6 +62,7 @@ private:
 	update_info_append_function_t append_from_update_info;
 	rollback_update_function_t rollback_update;
 	merge_update_function_t merge_update_function;
+	update_in_place_function_t update_in_place_function;
 };
 
 template <class F1, class F2, class F3>

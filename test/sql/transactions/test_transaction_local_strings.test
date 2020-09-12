@@ -1,0 +1,78 @@
+# name: test/sql/transactions/test_transaction_local_strings.test
+# description: Test operations on transaction local strings
+# group: [transactions]
+
+statement ok
+PRAGMA enable_verification
+
+# perform different operations on the same data within one transaction
+statement ok
+BEGIN TRANSACTION
+
+statement ok
+CREATE TABLE strings(i INTEGER, s VARCHAR)
+
+# append
+statement ok
+INSERT INTO strings VALUES (1, 'hello'), (2, 'world')
+
+query II
+SELECT * FROM strings ORDER BY 1
+----
+1	hello
+2	world
+
+query II
+SELECT * FROM strings WHERE i=2 ORDER BY 1
+----
+2	world
+
+# update
+statement ok
+UPDATE strings SET s='test' WHERE i=2
+
+query II
+SELECT * FROM strings ORDER BY 1
+----
+1	hello
+2	test
+
+# update to NULL
+statement ok
+UPDATE strings SET s=NULL WHERE i=2
+
+query II
+SELECT * FROM strings ORDER BY 1
+----
+1	hello
+2	NULL
+
+# update back from NULL
+statement ok
+UPDATE strings SET s='notnull' WHERE i=2
+
+query II
+SELECT * FROM strings ORDER BY 1
+----
+1	hello
+2	notnull
+
+# delete
+statement ok
+DELETE FROM strings WHERE i=2
+
+query II
+SELECT * FROM strings ORDER BY 1
+----
+1	hello
+
+# commit
+statement ok
+COMMIT
+
+# we can still read the table now
+query II
+SELECT * FROM strings ORDER BY 1
+----
+1	hello
+

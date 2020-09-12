@@ -52,6 +52,9 @@ public:
 	idx_t Append(ColumnAppendState &state, Vector &data, idx_t offset, idx_t count);
 	//! Revert an append made to this transient segment
 	void RevertAppend(idx_t start_row);
+
+	//! Perform a non-transactional in-place update within the segment
+	void UpdateInPlace(ColumnData &column_data, Vector &updates, row_t *ids, idx_t count);
 };
 
 } // namespace duckdb
