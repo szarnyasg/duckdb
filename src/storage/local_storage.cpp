@@ -77,7 +77,7 @@ void LocalStorage::InitializeScan(DataTable *table, LocalScanState &state) {
 
 void LocalStorage::Scan(LocalScanState &state, const vector<column_t> &column_ids, DataChunk &result,
                         unordered_map<idx_t, vector<TableFilter>> *table_filters) {
-	if (!state.storage || state.current_row > state.max_row) {
+	if (!state.storage || state.current_row >= state.max_row) {
 		// nothing left to scan
 		result.Reset();
 		return;
