@@ -26,3 +26,12 @@ COPY person_likes_comment      FROM 'PATHVAR/dynamic/person_likes_commentPOSTFIX
 
 COPY person_knows_person ( creationDate, deletionDate, explicitlyDeleted, person1id, person2id) FROM 'PATHVAR/dynamic/person_knows_personPOSTFIX' (DELIMITER '|', HEADER, TIMESTAMPFORMAT '%Y-%m-%dT%H:%M:%S.%g+00:00');
 COPY person_knows_person ( creationDate, deletionDate, explicitlyDeleted, person2id, person1id) FROM 'PATHVAR/dynamic/person_knows_personPOSTFIX' (DELIMITER '|', HEADER, TIMESTAMPFORMAT '%Y-%m-%dT%H:%M:%S.%g+00:00');
+
+
+--select creationDate, deletionDate, id, firstName, lastName, gender, birthday, locationIP, browserUsed, isLocatedIn_Place into merge_foreign_person from person;
+insert into merge_foreign_person  select creationDate, deletionDate, id, firstName, lastName, gender, birthday, locationIP, browserUsed, isLocatedIn_Place from person;
+
+create view merge_foreign_person_email  as select id, unnest(string_split_regex(email,  ';')) as email  from person;
+create view merge_foreign_person_speaks as select id, unnest(string_split_regex(speaks, ';')) as speaks from person;
+
+EXPORT DATABASE 'csv-merge-foreign' (FORMAT CSV, DELIMITER '|');

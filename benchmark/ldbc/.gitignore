@@ -1,4 +1,4 @@
 sf0.1
 *.duckdb
 *.duckdb.wal
-
+csv-*
