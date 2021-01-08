@@ -1,0 +1,61 @@
+create table Edge_Comment_hasTag_Tag (
+    creationDate timestamp without time zone not null,
+    id bigint not null,
+    hasTag_Tag bigint not null
+);
+
+create table Edge_Forum_hasMember_Person (
+    creationDate timestamp without time zone not null,
+    id bigint not null,
+    hasMember_Person bigint not null
+);
+
+create table Edge_Forum_hasTag_Tag (
+    creationDate timestamp without time zone not null,
+    id bigint not null,
+    hasTag_Tag bigint not null
+);
+
+create table Edge_Person_hasInterest_Tag (
+    creationDate timestamp without time zone not null,
+    id bigint not null,
+    hasInterest_Tag bigint not null
+);
+
+create table Edge_Person_knows_Person (
+    creationDate timestamp without time zone not null,
+    Person1id bigint not null,
+    Person2id bigint not null
+);
+
+create table Edge_Person_likes_Comment (
+    creationDate timestamp without time zone not null,
+    id bigint not null,
+    likes_Comment bigint not null
+);
+
+create table Edge_Person_likes_Post (
+    creationDate timestamp without time zone not null,
+    id bigint not null,
+    likes_Post bigint not null
+);
+
+create table Edge_Person_studyAt_University (
+    creationDate timestamp without time zone not null,
+    id bigint not null,
+    studyAt_University bigint not null,
+    classYear int not null
+);
+
+create table Edge_Person_workAt_Company (
+    creationDate timestamp without time zone not null,
+    id bigint not null,
+    workAt_Company bigint not null,
+    workFrom int not null
+);
+
+create table Edge_Post_hasTag_Tag (
+    creationDate timestamp without time zone not null,
+    id bigint not null,
+    hasTag_Tag bigint not null
+);
