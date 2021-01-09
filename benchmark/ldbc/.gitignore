@@ -2,3 +2,5 @@ sf0.1
 *.duckdb
 *.duckdb.wal
 csvs/
+duckdb
+*.zip
