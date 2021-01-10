@@ -15,8 +15,18 @@ for i in range(delta.days + 1):
 
     interval = ["2012-02-01 00:00:00", "2012-03-01 00:00:00"]
 
-    con.execute("DELETE FROM MergeForeign_Comment")
-    con.execute("DELETE FROM delete_Comment")
+    # clean insert tables
+    con.execute("DELETE FROM MergeForeign_Comment");
+
+    # clean delete tables
+    con.execute("DELETE FROM delete_Person");
+    con.execute("DELETE FROM delete_Forum");
+    con.execute("DELETE FROM delete_Post");
+    con.execute("DELETE FROM delete_Comment");
+    con.execute("DELETE FROM Delete_Person_likes_Comment");
+    con.execute("DELETE FROM Delete_Person_likes_Post");
+    con.execute("DELETE FROM Delete_Forum_hasMember_Person");
+    con.execute("DELETE FROM Delete_Person_knows_Person");
 
     # inserts
     con.execute("""INSERT INTO MergeForeign_Comment
@@ -40,19 +50,19 @@ for i in range(delta.days + 1):
         SELECT creationDate, id
         FROM Comment WHERE creationDate < ? AND deletionDate < ?""", interval)
 
-    con.execute("""INSERT INTO Delete_Person_likes_Comment
+    con.execute("""INSERT INTO delete_Person_likes_Comment
         SELECT deletionDate, id, likes_Comment
         FROM Person_likes_Comment WHERE explicitlyDeleted AND creationDate < ? AND deletionDate < ?""", interval)
 
-    con.execute("""INSERT INTO Delete_Person_likes_Post
+    con.execute("""INSERT INTO delete_Person_likes_Post
         SELECT deletionDate, id, likes_Post
         FROM Person_likes_Post WHERE explicitlyDeleted AND creationDate < ? AND deletionDate < ?""", interval)
 
-    con.execute("""INSERT INTO Delete_Forum_hasMember_Person
+    con.execute("""INSERT INTO delete_Forum_hasMember_Person
         SELECT deletionDate, id, hasMember_Person
         FROM Forum_hasMember_Person WHERE explicitlyDeleted AND creationDate < ? AND deletionDate < ?""", interval)
 
-    con.execute("""INSERT INTO Delete_Person_knows_Person
+    con.execute("""INSERT INTO delete_Person_knows_Person
         SELECT deletionDate, Person1id, Person2id
         FROM Person_knows_Person WHERE explicitlyDeleted AND creationDate < ? AND deletionDate < ?""", interval)
 
