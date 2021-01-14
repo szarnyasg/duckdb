@@ -11,9 +11,10 @@ delta = end_date - start_date
 
 for i in range(delta.days + 1):
     day = start_date + timedelta(days=i)
+    next_day = day + timedelta(days=i)
     print(day)
 
-    interval = ["2012-02-01 00:00:00", "2012-03-01 00:00:00"]
+    interval = [day, next_day]
 
     # clean insert tables
     con.execute("DELETE FROM MergeForeign_Comment");
@@ -23,10 +24,10 @@ for i in range(delta.days + 1):
     con.execute("DELETE FROM delete_Forum");
     con.execute("DELETE FROM delete_Post");
     con.execute("DELETE FROM delete_Comment");
-    con.execute("DELETE FROM Delete_Person_likes_Comment");
-    con.execute("DELETE FROM Delete_Person_likes_Post");
-    con.execute("DELETE FROM Delete_Forum_hasMember_Person");
-    con.execute("DELETE FROM Delete_Person_knows_Person");
+    con.execute("DELETE FROM delete_Person_likes_Comment");
+    con.execute("DELETE FROM delete_Person_likes_Post");
+    con.execute("DELETE FROM delete_Forum_hasMember_Person");
+    con.execute("DELETE FROM delete_Person_knows_Person");
 
     # inserts
     con.execute("""INSERT INTO MergeForeign_Comment

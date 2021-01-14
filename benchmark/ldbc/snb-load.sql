@@ -27,7 +27,5 @@ COPY Person_likes_Comment      FROM 'PATHVAR/dynamic/person_likes_commentPOSTFIX
 COPY Person_knows_Person ( creationDate, deletionDate, explicitlyDeleted, person1id, person2id) FROM 'PATHVAR/dynamic/person_knows_personPOSTFIX' (DELIMITER '|', HEADER, TIMESTAMPFORMAT '%Y-%m-%dT%H:%M:%S.%g+00:00');
 COPY Person_knows_Person ( creationDate, deletionDate, explicitlyDeleted, person2id, person1id) FROM 'PATHVAR/dynamic/person_knows_personPOSTFIX' (DELIMITER '|', HEADER, TIMESTAMPFORMAT '%Y-%m-%dT%H:%M:%S.%g+00:00');
 
--- insert into merge_foreign_person  select creationDate, deletionDate, id, firstName, lastName, gender, birthday, locationIP, browserUsed, isLocatedIn_Place from person;
-
--- create view merge_foreign_person_email  as select id, unnest(string_split_regex(email,  ';')) as email  from person;
--- create view merge_foreign_person_speaks as select id, unnest(string_split_regex(speaks, ';')) as speaks from person;
+COPY (SELECT id, unnest(string_split_regex(email,  ';')) AS email FROM person) TO 'Person_email.csv'  WITH (HEADER, DELIMITER '|');
+COPY (SELECT id, unnest(string_split_regex(speaks, ';')) AS email FROM person) TO 'Person_speaks.csv' WITH (HEADER, DELIMITER '|');
