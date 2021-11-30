@@ -1344,7 +1344,7 @@ public class TestDuckDBJDBC {
 		conn.close();
 	}
 
-	public static void test_unsiged_integers() throws Exception {
+	public static void test_unsigned_integers() throws Exception {
 		DuckDBConnection conn = (DuckDBConnection) DriverManager.getConnection("jdbc:duckdb:");
 		Statement stmt = conn.createStatement();
 
