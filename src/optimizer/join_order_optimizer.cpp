@@ -727,6 +727,9 @@ unique_ptr<LogicalOperator> JoinOrderOptimizer::Optimize(unique_ptr<LogicalOpera
 		filter_info->filter_index = i;
 		// now check if it can be used as a join predicate
 		if (filter->GetExpressionClass() == ExpressionClass::BOUND_COMPARISON) {
+			// Based on the expression, we should check that the comparison is between the columns from the biggest relation
+			// (from either side). If not, this expression should be flagged as 'exploding'.
+			// Similarly, comparisons of columns between relations that are the same table should be flagged as 'exploding'.
 			auto comparison = (BoundComparisonExpression *)filter.get();
 			// extract the bindings that are required for the left and right side of the comparison
 			unordered_set<idx_t> left_bindings, right_bindings;
