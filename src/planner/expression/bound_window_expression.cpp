@@ -27,6 +27,11 @@ bool BoundWindowExpression::Equals(const BaseExpression &other_p) const {
 	}
 	auto &other = other_p.Cast<BoundWindowExpression>();
 
+	if (bind_info.get() != other.bind_info.get()) {
+		if (!bind_info || !other.bind_info || !bind_info->Equals(*other.bind_info)) {
+			return false;
+		}
+	}
 	if (ignore_nulls != other.ignore_nulls) {
 		return false;
 	}
