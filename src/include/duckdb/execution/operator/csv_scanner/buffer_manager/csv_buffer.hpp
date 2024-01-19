@@ -74,7 +74,7 @@ public:
 
 	//! By default, we use CSV_BUFFER_SIZE to allocate each buffer
 	//! TODO: Should benchmarks other values
-	static constexpr idx_t CSV_BUFFER_SIZE = 32000000; // 32MB
+	static constexpr idx_t CSV_BUFFER_SIZE = 33554432; // Closest power of two to 32MB
 	//! In case the file has a size < 32MB, we will use this size instead
 	//! This is to avoid mallocing a lot of memory for a small file
 	//! And if it's a compressed file we can't use the actual size of the file
