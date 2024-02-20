@@ -7,7 +7,7 @@
 # development, create `extension/extension_config_local.cmake` and specify extensions there.
 # The local file is also loaded by the DuckDB CMake build but ignored by version control.
 
-# Parquet is loaded by default on every build as its a essential part of DuckDB
+# Parquet is loaded by default on every build as its an essential part of DuckDB
 duckdb_extension_load(parquet)
 
 # Jemalloc is enabled by default for linux. MacOS malloc is already good enough and Jemalloc on windows has issues.
