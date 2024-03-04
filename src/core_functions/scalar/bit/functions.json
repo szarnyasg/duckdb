@@ -27,5 +27,13 @@
         "example": "bitstring('1010'::BIT, 7)",
         "struct": "BitStringFun",
         "type": "scalar_function"
+    },
+    {
+        "name": "bit_length",
+        "parameters": "bitstring",
+        "description": "Returns the number of bits in the bitstring",
+        "example": "bit_length('1101011'::BIT)",
+        "struct": "BitStringFun",
+        "type": "scalar_function"
     }
 ]
