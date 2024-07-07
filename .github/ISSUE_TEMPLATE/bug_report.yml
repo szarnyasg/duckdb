@@ -49,7 +49,7 @@ body:
       description: |
         Please provide steps to reproduce the behavior, preferably a [minimal reproducible example](https://en.wikipedia.org/wiki/Minimal_reproducible_example). Please adhere the following guidelines:
 
-        * Format the code and the output as [code blocks](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks) using triple backticks:
+        * Format the code blocks and the outputs as [code blocks](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks) using triple backticks:
 
           ````
           ```
@@ -57,7 +57,7 @@ body:
           ```
           ````
         * Add all required imports for scripts, e.g., `import duckdb`, `import pandas as pd`.
-        * Remove all prompts from the scripts. This include DuckDB's 'D' prompt and Python's `>>>` prompt. Removing these prompts makes reproduction attempts quicker.
+        * Remove all prompts from the scripts. These include DuckDB's `D` prompt and Python's `>>>` prompt. Removing these prompts makes reproduction attempts quicker.
         * Make sure that the script and its outputs are provided in separate code blocks.
         * If applicable, please check whether the issue is reproducible via running plain SQL queries from the DuckDB CLI client.
     validations:
@@ -98,7 +98,7 @@ body:
   - type: input
     attributes:
       label: "Affiliation:"
-      placeholder: e.g., Oracle
+      placeholder: e.g., Acme Corporation
     validations:
       required: true
 
