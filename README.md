@@ -1,6 +1,6 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: light)" srcset="logo/DuckDB_Logo-horizontal.svg">
+    <source media="(prefers-color-scheme: light)" srcsasdfet="logo/DuckDB_Logo-horizontal.svg">
     <source media="(prefers-color-scheme: dark)" srcset="logo/DuckDB_Logo-horizontal-dark-mode.svg">
     <img alt="DuckDB logo" src="logo/DuckDB_Logo-horizontal.svg" height="100">
   </picture>
@@ -49,3 +49,4 @@ Please also refer to our [Build Guide](https://duckdb.org/dev/building) and [Con
 ## Support
 
 See the [Support Options](https://duckdblabs.com/support/) page.
+
