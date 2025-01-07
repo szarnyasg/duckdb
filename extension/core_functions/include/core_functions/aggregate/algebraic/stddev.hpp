@@ -86,9 +86,6 @@ struct VarSampOperation : public STDDevBaseOperation {
 			finalize_data.ReturnNull();
 		} else {
 			target = state.dsquared / (state.count - 1);
-			if (!Value::DoubleIsFinite(target)) {
-				throw OutOfRangeException("VARSAMP is out of range!");
-			}
 		}
 	}
 };
@@ -100,9 +97,6 @@ struct VarPopOperation : public STDDevBaseOperation {
 			finalize_data.ReturnNull();
 		} else {
 			target = state.count > 1 ? (state.dsquared / state.count) : 0;
-			if (!Value::DoubleIsFinite(target)) {
-				throw OutOfRangeException("VARPOP is out of range!");
-			}
 		}
 	}
 };
@@ -114,9 +108,6 @@ struct STDDevSampOperation : public STDDevBaseOperation {
 			finalize_data.ReturnNull();
 		} else {
 			target = sqrt(state.dsquared / (state.count - 1));
-			if (!Value::DoubleIsFinite(target)) {
-				throw OutOfRangeException("STDDEV_SAMP is out of range!");
-			}
 		}
 	}
 };
@@ -128,9 +119,6 @@ struct STDDevPopOperation : public STDDevBaseOperation {
 			finalize_data.ReturnNull();
 		} else {
 			target = state.count > 1 ? sqrt(state.dsquared / state.count) : 0;
-			if (!Value::DoubleIsFinite(target)) {
-				throw OutOfRangeException("STDDEV_POP is out of range!");
-			}
 		}
 	}
 };
@@ -142,9 +130,6 @@ struct StandardErrorOfTheMeanOperation : public STDDevBaseOperation {
 			finalize_data.ReturnNull();
 		} else {
 			target = sqrt(state.dsquared / state.count) / sqrt((state.count));
-			if (!Value::DoubleIsFinite(target)) {
-				throw OutOfRangeException("SEM is out of range!");
-			}
 		}
 	}
 };
